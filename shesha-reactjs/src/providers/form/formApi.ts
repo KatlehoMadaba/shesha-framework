@@ -83,6 +83,11 @@ export interface IFormApi<Values extends object = object> {
    */
   showLoader: (message?: string) => IFormLoaderInstanceApi;
 
+  /**
+   * Hide all active loaders
+   */
+  hideLoaders: () => void;
+
   /** Set validation errors. Need for display validation errors in the ValidationErrors component */
   setValidationErrors: (payload: string | IErrorInfo | IAjaxResponseBase | AxiosResponse<IAjaxResponseBase> | Error) => void;
 
@@ -153,11 +158,15 @@ class PublicFormApiWrapper<TValues extends object = object> implements IFormApi<
     return this.#form.formData;
   };
 
-  showLoader = (message?: string) => {
+  showLoader = (message?: string): IFormLoaderInstanceApi => {
     return this.#form?.loaderApi?.showLoader(message) || {
       updateMessage: () => { /* no-op */ },
       close: () => { /* no-op */ },
     };
+  };
+
+  hideLoaders = (): void => {
+    this.#form?.loaderApi?.hideLoaders();
   };
 
   setValidationErrors = (payload: IFormValidationErrors): void => {
