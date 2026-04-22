@@ -137,19 +137,19 @@ const DataContextBinder = <TData extends object = object>(props: PropsWithChildr
   const getFull: ContextGetFull = () => {
     const data = getData();
     // Create a shallow copy to avoid mutating the original data object
-    const fullData: IDataContextFull = { ...(data ?? {}) };
+    const fullData: IDataContextFull = { ...data };
     const api = getApi();
     if (!!api) {
       // Reserved property names: API properties (e.g., 'showLoader', 'hideLoaders') and 'setFieldValue'
       // These are injected by DataContextBinder and should not be used as data field names
       // Warn if collision detected
       const apiKeys = Object.keys(api);
-      apiKeys.forEach(apiKey => {
-        if (data && Object.prototype.hasOwnProperty.call(data, apiKey)) {
+      apiKeys.forEach((apiKey) => {
+        if (Object.prototype.hasOwnProperty.call(data, apiKey)) {
           console.warn(
             `[DataContextBinder] Property name collision detected: '${apiKey}' is a reserved API property name. ` +
             `The data field '${apiKey}' will be overwritten by the DataContext API method. ` +
-            `Please rename this field in your data model to avoid conflicts.`
+            `Please rename this field in your data model to avoid conflicts.`,
           );
         }
       });
@@ -157,14 +157,14 @@ const DataContextBinder = <TData extends object = object>(props: PropsWithChildr
       Object.assign(fullData, api);
     }
     if (includeSetFieldValue) {
-      if (data && Object.prototype.hasOwnProperty.call(data, 'setFieldValue')) {
+      if (Object.prototype.hasOwnProperty.call(data, 'setFieldValue')) {
         console.warn(
           `[DataContextBinder] Property name collision detected: 'setFieldValue' is a reserved property name. ` +
           `The data field 'setFieldValue' will be overwritten by the DataContext API method. ` +
-          `Please rename this field in your data model to avoid conflicts.`
+          `Please rename this field in your data model to avoid conflicts.`,
         );
       }
-      fullData.setFieldValue = setFieldValue;
+      fullData.setFieldValue = setFieldValue as unknown as ContextSetFieldValue;
     }
     return fullData;
   };
