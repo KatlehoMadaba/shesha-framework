@@ -532,6 +532,9 @@ const SubFormProvider: FC<PropsWithChildren<ISubFormProviderProps>> = (props) =>
     showLoader: function (message?: string) {
       return parentFormApi.showLoader(message);
     },
+    hideLoaders: function (): void {
+      parentFormApi.hideLoaders();
+    },
     setValidationErrors: function (payload: string | IErrorInfo | IAjaxResponseBase | AxiosResponse<IAjaxResponseBase> | Error): void {
       parentFormApi.setValidationErrors(payload);
     },
