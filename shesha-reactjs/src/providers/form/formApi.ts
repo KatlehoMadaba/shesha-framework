@@ -159,14 +159,14 @@ class PublicFormApiWrapper<TValues extends object = object> implements IFormApi<
   };
 
   showLoader = (message?: string): IFormLoaderInstanceApi => {
-    return this.#form?.loaderApi?.showLoader(message) || {
+    return this.#form.loaderApi?.showLoader(message) || {
       updateMessage: () => { /* no-op */ },
       close: () => { /* no-op */ },
     };
   };
 
   hideLoaders = (): void => {
-    this.#form?.loaderApi?.hideLoaders();
+    this.#form.loaderApi?.hideLoaders();
   };
 
   setValidationErrors = (payload: IFormValidationErrors): void => {
