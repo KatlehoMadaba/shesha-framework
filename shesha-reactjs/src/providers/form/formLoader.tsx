@@ -62,7 +62,7 @@ export const FormLoader: FC<FormLoaderProps> = ({ message }) => {
   const { styles } = useStyles();
   const [useSpinFallback, setUseSpinFallback] = useState(false);
 
-  const handleImageError = () => {
+  const handleImageError = (): void => {
     setUseSpinFallback(true);
   };
 
