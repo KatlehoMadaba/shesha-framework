@@ -66,10 +66,10 @@ export const GlobalLoaderProvider: FC<PropsWithChildren> = ({ children }) => {
   const updateLoader = useCallback((id: string, updates: Partial<InternalLoaderInstance>) => {
     setActiveLoaders((prev) => {
       const updated = prev.map((loader) =>
-        loader.id === id ? { ...loader, ...updates } : loader
+        loader.id === id ? { ...loader, ...updates } : loader,
       );
       // Update ref
-      const loader = updated.find(l => l.id === id);
+      const loader = updated.find((l) => l.id === id);
       if (loader) {
         loadersRef.current.set(id, loader);
       }
