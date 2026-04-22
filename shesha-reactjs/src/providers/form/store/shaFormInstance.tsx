@@ -59,6 +59,7 @@ interface ShaFormInstanceArguments<Values extends object = object> {
 
 class PublicFormApi<Values extends object = object> implements IFormApi<Values> {
   #form: IShaFormInstance<Values>;
+
   #formLoaderContext?: FormLoaderContextValue;
 
   constructor(form: IShaFormInstance<Values>, formLoaderContext?: FormLoaderContextValue) {
