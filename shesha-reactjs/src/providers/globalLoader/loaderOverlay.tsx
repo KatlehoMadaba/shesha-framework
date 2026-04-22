@@ -11,7 +11,7 @@ export const LoaderOverlay: FC<LoaderOverlayProps> = ({ message, isBlocking = fa
   const { styles } = useStyles();
   const [useSpinFallback, setUseSpinFallback] = useState(false);
 
-  const handleImageError = () => {
+  const handleImageError = (): void => {
     setUseSpinFallback(true);
   };
 
