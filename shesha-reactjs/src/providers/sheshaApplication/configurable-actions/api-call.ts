@@ -12,6 +12,7 @@ import { isNullOrWhiteSpace } from '@/utils/nullables';
 import { FormMarkupFactory } from '@/interfaces/configurableAction';
 import { IRequestParam, IRequestHeader, IRequestBody, RequestValue } from '@/components/requestConfigModal';
 import { isPropertySettings } from '@/designer-components/_settings/utils';
+import { IDictionary } from '@/interfaces';
 
 // The action arguments evaluator already runs Mustache on every string in the arguments tree,
 // including `_value` and `_code` inside our IPropertySetting wrapper. So by the time the
@@ -93,6 +94,22 @@ const isGlobalUrl = (url: string): boolean => {
   return !isNullOrWhiteSpace(url) && Boolean(url.match(/^(http|ftp|https):\/\//gi));
 };
 
+const prepareUrlAndData = (url: string, verb: string, parameters: IDictionary<string>): { url: string; data: IDictionary<string> | undefined } => {
+  const encodeAsQueryString = ['get', 'delete'].includes(verb.toLowerCase());
+  if (encodeAsQueryString) {
+    const queryStringData = { ...getQueryParams(url), ...parameters };
+    return {
+      url: `${url}?${qs.stringify(queryStringData, { allowDots: true })}`,
+      data: undefined,
+    };
+  } else {
+    return {
+      url,
+      data: parameters,
+    };
+  }
+};
+
 export const useApiCallAction = (): void => {
   const { backendUrl, httpHeaders } = useSheshaApplication();
 
@@ -101,7 +118,7 @@ export const useApiCallAction = (): void => {
     owner: 'Common',
     ownerUid: SheshaActionOwners.Common,
     name: 'API Call',
-    label: 'Call API',
+    label: 'API Call',
     sortOrder: 5,
     hasArguments: true,
     argumentsFormMarkup: getApiCallArgumentsForm,
@@ -219,52 +236,27 @@ export const useApiCallAction = (): void => {
 
       // validate arguments
       if (!url)
-        return Promise.reject('Expected expression to be defined but it was found to be empty.');
+        return Promise.reject('Url is not specified.');
+      if (!verb)
+        return Promise.reject('Http verb is not specified.');
 
       const baseUrl = isGlobalUrl(url)
         ? undefined
         : backendUrl;
 
-      let preparedUrl = url;
-      let preparedData = requestBody !== undefined ? requestBody : { ...finalParams };
-      const encodeAsQueryString = ['get', 'delete'].includes(verb?.toLowerCase());
-
-      if (encodeAsQueryString) {
-        const queryStringData = { ...getQueryParams(preparedUrl), ...finalParams };
-        const queryString = qs.stringify(queryStringData, { allowDots: true });
-
-        // Debug logging
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('🔍 Query String Debug:', {
-            finalParams,
-            queryStringData,
-            queryString,
-            originalUrl: preparedUrl,
-          });
-        }
-
-        // Remove trailing ? from URL if present
-        const cleanUrl = preparedUrl.endsWith('?') ? preparedUrl.slice(0, -1) : preparedUrl;
-
-        // Add query string only if there are parameters
-        if (queryString) {
-          preparedUrl = `${cleanUrl}?${queryString}`;
-        } else {
-          preparedUrl = cleanUrl;
-        }
-
-        preparedData = undefined;
-      } else if (requestBody === undefined) {
-        // If no body was explicitly set, use params as body for POST/PUT/PATCH
-        preparedData = { ...finalParams };
-      }
+      const { url: preparedUrl, data: paramsData } = prepareUrlAndData(url, verb, { ...finalParams });
+      // An explicitly configured request body takes precedence as the payload for verbs that send one
+      // (GET/DELETE encode params into the query string, so paramsData is undefined there and no body is sent).
+      const preparedData = paramsData !== undefined && requestBody !== undefined
+        ? requestBody
+        : paramsData;
 
       return axios({
         url: preparedUrl,
-        baseURL: baseUrl,
         data: preparedData,
         method: verb as Method,
         headers: allHeaders,
+        ...(baseUrl && { baseURL: baseUrl }),
       }).then((response) => unwrapAbpResponse(response.data));
     },
   }, [backendUrl, httpHeaders]);
