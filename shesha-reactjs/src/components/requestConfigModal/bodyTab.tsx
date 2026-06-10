@@ -68,7 +68,7 @@ export const BodyTab: FC<IBodyTabProps> = ({ body, onChange, transformation, onT
   const metadataCtx = useMetadata(false);
   const keyOptions = asPropertiesArray(metadataCtx?.metadata?.properties, []).map((p) => ({
     value: p.path,
-    label: p.label && p.label !== p.path ? `${p.path} — ${p.label}` : p.path,
+    label: p.path,
   }));
 
   const handleViewChange = (next: BodyView): void => {
