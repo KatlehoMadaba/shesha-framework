@@ -43,6 +43,10 @@ export const BodyTab: FC<IBodyTabProps> = ({ body, onChange, transformation, onT
     () => ({ [body.type]: body.content }),
   );
 
+  // Remember the raw sub-type (Text/JSON/XML/…) so leaving and returning to the "raw" tab keeps the
+  // last choice instead of resetting to "text".
+  const [lastRawSubType, setLastRawSubType] = useState<RawBodySubType>(body.rawSubType ?? 'text');
+
   const defaultContentFor = (type: BodyType): IRequestBody['content'] =>
     type === 'form-data' || type === 'x-www-form-urlencoded' ? ([] as IFormDataField[]) : '';
 
@@ -58,7 +62,7 @@ export const BodyTab: FC<IBodyTabProps> = ({ body, onChange, transformation, onT
     // Restore the previously-entered content for this type instead of resetting it.
     const stashed = contentByType[type];
     const content = stashed !== undefined ? stashed : defaultContentFor(type);
-    const rawSubType = type === 'raw' ? (body.rawSubType ?? 'text') : undefined;
+    const rawSubType = type === 'raw' ? lastRawSubType : undefined;
 
     onChange({ type, content, rawSubType });
     setJsonError(null);
@@ -77,6 +81,7 @@ export const BodyTab: FC<IBodyTabProps> = ({ body, onChange, transformation, onT
   };
 
   const handleRawSubTypeChange = (rawSubType: RawBodySubType): void => {
+    setLastRawSubType(rawSubType);
     onChange({ ...body, rawSubType });
   };
 
